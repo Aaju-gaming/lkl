@@ -10,10 +10,19 @@ jobs:
           distribution: temurin
           java-version: 25
       - name: Unpack project
-        run: unzip -q blackcat-client-26.2-(1).zip
-      - name: Get Gradle (with retries)
+        run: unzip -q "blackcat-client-26.2-(1).zip"
+      - name: Get Gradle (with fallbacks)
         run: |
-          curl -fL --retry 10 --retry-all-errors --retry-delay 15 -o gradle.zip https://services.gradle.org/distributions/gradle-9.5.1-bin.zip
+          ok=0
+          for url in \
+            https://services.gradle.org/distributions/gradle-9.5.1-bin.zip \
+            https://downloads.gradle.org/distributions/gradle-9.5.1-bin.zip \
+            https://mirrors.cloud.tencent.com/gradle/gradle-9.5.1-bin.zip \
+            https://mirrors.aliyun.com/gradle/gradle-9.5.1-bin.zip; do
+            echo "Trying $url"
+            if curl -fL --retry 4 --retry-all-errors --retry-delay 10 -o gradle.zip "$url"; then ok=1; break; fi
+          done
+          [ "$ok" = 1 ] || { echo "All Gradle downloads failed"; exit 1; }
           unzip -q gradle.zip -d "$HOME"
           echo "$HOME/gradle-9.5.1/bin" >> "$GITHUB_PATH"
       - name: Build
