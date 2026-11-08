@@ -10,7 +10,7 @@ jobs:
           distribution: temurin
           java-version: 25
       - name: Unpack project
-        run: unzip -q "blackcat-client-26.2-(1).zip"
+        run: unzip -q "$(LC_ALL=C ls *.zip | head -1)"
       - name: Get Gradle (with fallbacks)
         run: |
           ok=0
